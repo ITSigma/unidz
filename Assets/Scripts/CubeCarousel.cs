@@ -48,7 +48,6 @@ public class CubeCarousel : MonoBehaviour
             cubes[i].transform.localRotation = Quaternion.Euler(0, 0, cubeAngle);
             cubes[i].transform.localPosition = Vector3.up * math.sin(math.radians(cubeAngle)) * radius
                 + Vector3.right * math.cos(math.radians(cubeAngle)) * radius;
-            Debug.Log($"rad {radius} {i} : {cubes[i].transform.localPosition}");
         }
     }
 }
