@@ -13,7 +13,7 @@ public class CubeCarousel : MonoBehaviour
 
     private const float FullCircleAngle = 360f;
 
-    void Awake()
+    private void Awake()
     {
         for (var i = 0; i < cubeCount; i++)
         {
@@ -24,7 +24,7 @@ public class CubeCarousel : MonoBehaviour
         UpdateCarouselView();
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         var angle = rightSpeed / FullCircleAngle;
         transform.Rotate(0, 0, angle);
@@ -40,9 +40,9 @@ public class CubeCarousel : MonoBehaviour
         if (cubes.Count == 0)
             return;
 
-        var angle = FullCircleAngle / cubeCount;
+        var angle = FullCircleAngle / cubes.Count;
 
-        for (var i = 0; i < cubeCount; i++)
+        for (var i = 0; i < cubes.Count; i++)
         {
             var cubeAngle = angle * i;
             cubes[i].transform.localRotation = Quaternion.Euler(0, 0, cubeAngle);
