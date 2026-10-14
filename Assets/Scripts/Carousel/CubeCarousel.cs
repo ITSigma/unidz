@@ -5,15 +5,15 @@ using UnityEngine;
 public class CubeCarousel : MonoBehaviour
 {
     [SerializeField] private float rightSpeed;
-    [SerializeField][Range(0, 8)] private float radius;
-    [SerializeField][Min(1)] private int cubeCount;
+    [SerializeField] [Range(0, 8)] private float radius;
+    [SerializeField] [Min(1)] private int cubeCount;
     [SerializeField] private Cube prefab;
 
     private readonly List<Cube> cubes = new();
 
     private const float FullCircleAngle = 360f;
 
-    void Awake()
+    private void Awake()
     {
         for (var i = 0; i < cubeCount; i++)
         {
@@ -24,7 +24,7 @@ public class CubeCarousel : MonoBehaviour
         UpdateCarouselView();
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         var angle = rightSpeed / FullCircleAngle;
         transform.Rotate(0, 0, angle);
@@ -40,14 +40,14 @@ public class CubeCarousel : MonoBehaviour
         if (cubes.Count == 0)
             return;
 
-        var angle = FullCircleAngle / cubeCount;
+        var angle = FullCircleAngle / cubes.Count;
 
-        for (var i = 0; i < cubeCount; i++)
+        for (var i = 0; i < cubes.Count; i++)
         {
             var cubeAngle = angle * i;
             cubes[i].transform.localRotation = Quaternion.Euler(0, 0, cubeAngle);
             cubes[i].transform.localPosition = Vector3.up * math.sin(math.radians(cubeAngle)) * radius
-                + Vector3.right * math.cos(math.radians(cubeAngle)) * radius;
+                                               + Vector3.right * math.cos(math.radians(cubeAngle)) * radius;
         }
     }
 }
