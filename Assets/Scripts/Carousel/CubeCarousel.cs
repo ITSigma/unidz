@@ -2,52 +2,55 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class CubeCarousel : MonoBehaviour
+namespace Carousel
 {
-    [SerializeField] private float rightSpeed;
-    [SerializeField] [Range(0, 8)] private float radius;
-    [SerializeField] [Min(1)] private int cubeCount;
-    [SerializeField] private Cube prefab;
-
-    private readonly List<Cube> cubes = new();
-
-    private const float FullCircleAngle = 360f;
-
-    private void Awake()
+    public class CubeCarousel : MonoBehaviour
     {
-        for (var i = 0; i < cubeCount; i++)
+        [SerializeField] private float rightSpeed;
+        [SerializeField] [Range(0, 8)] private float radius;
+        [SerializeField] [Min(1)] private int cubeCount;
+        [SerializeField] private Cube prefab;
+
+        private readonly List<Cube> cubes = new();
+
+        private const float FullCircleAngle = 360f;
+
+        private void Awake()
         {
-            var cube = Instantiate(prefab, transform);
-            cubes.Add(cube);
+            for (var i = 0; i < cubeCount; i++)
+            {
+                var cube = Instantiate(prefab, transform);
+                cubes.Add(cube);
+            }
+
+            UpdateCarouselView();
         }
 
-        UpdateCarouselView();
-    }
-
-    private void FixedUpdate()
-    {
-        var angle = rightSpeed / FullCircleAngle;
-        transform.Rotate(0, 0, angle);
-    }
-
-    private void OnValidate()
-    {
-        UpdateCarouselView();
-    }
-
-    private void UpdateCarouselView()
-    {
-        if (cubes.Count == 0)
-            return;
-
-        var angle = FullCircleAngle / cubes.Count;
-
-        for (var i = 0; i < cubes.Count; i++)
+        private void FixedUpdate()
         {
-            var cubeAngle = angle * i;
-            cubes[i].transform.localRotation = Quaternion.Euler(0, 0, cubeAngle);
-            cubes[i].transform.localPosition = Vector3.up * math.sin(math.radians(cubeAngle)) * radius
-                                               + Vector3.right * math.cos(math.radians(cubeAngle)) * radius;
+            var angle = rightSpeed / FullCircleAngle;
+            transform.Rotate(0, 0, angle);
+        }
+
+        private void OnValidate()
+        {
+            UpdateCarouselView();
+        }
+
+        private void UpdateCarouselView()
+        {
+            if (cubes.Count == 0)
+                return;
+
+            var angle = FullCircleAngle / cubes.Count;
+
+            for (var i = 0; i < cubes.Count; i++)
+            {
+                var cubeAngle = angle * i;
+                cubes[i].transform.localRotation = Quaternion.Euler(0, 0, cubeAngle);
+                cubes[i].transform.localPosition = Vector3.up * math.sin(math.radians(cubeAngle)) * radius
+                                                   + Vector3.right * math.cos(math.radians(cubeAngle)) * radius;
+            }
         }
     }
 }
