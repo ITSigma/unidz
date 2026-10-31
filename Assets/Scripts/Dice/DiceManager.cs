@@ -1,89 +1,126 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-public class DiceManager : MonoBehaviour
+namespace Dice
 {
-    [SerializeField] [Min(0)] private float torqueRandomRange;
-    [SerializeField] [Min(0)] private float forceRandomRange;
-    [SerializeField] [Min(0.05f)] private float spawnRadius;
-    [SerializeField] [Min(1)] private int diceCount;
-    [SerializeField] [Min(0.1f)] private float minRollDuration;
-    [SerializeField] private Dice prefab;
-
-    private readonly List<Dice> spawnedDice = new();
-    private bool isRolling;
-    private float rollStartTime;
-
-    private void Awake()
+    public class DiceManager : MonoBehaviour
     {
-        for (var i = 0; i < diceCount; i++)
+        public event Action OnTotalScoreChange;
+
+        public int DiceCount => diceCount;
+        public int? TotalScore { get; private set; }
+        public bool IsRolling { get; private set; }
+
+        [SerializeField] [Min(0)] private float torqueRandomRange;
+        [SerializeField] [Min(0)] private float forceRandomRange;
+        [SerializeField] [Min(0.05f)] private float spawnRadius;
+        [SerializeField] [Min(1)] private int diceCount;
+        [SerializeField] [Min(0.1f)] private float minRollDuration;
+        [SerializeField] private Dice prefab;
+
+        private readonly List<Dice> spawnedDice = new();
+        private float rollStartTime;
+
+        private void Awake()
         {
-            var dice = Instantiate(prefab, transform);
+            if (prefab == null)
+            {
+                return;
+            }
 
-            var randomPos = new Vector3(
-                Random.Range(-spawnRadius, spawnRadius),
-                0,
-                Random.Range(-spawnRadius, spawnRadius)
-            );
-
-            dice.transform.localPosition += randomPos;
-            dice.transform.localRotation = Random.rotation;
-
-            spawnedDice.Add(dice);
+            SpawnDice();
         }
-    }
 
-    private void OnDiceRoll()
-    {
-        if (isRolling)
-            return;
-
-        StartRoll();
-    }
-
-    private void StartRoll()
-    {
-        isRolling = true;
-        rollStartTime = Time.time;
-
-        foreach (var dice in spawnedDice)
+        public void RollDice()
         {
-            var forceVector = new Vector3(
-                Random.Range(-forceRandomRange, forceRandomRange),
-                Random.Range(0, 2 * forceRandomRange),
-                Random.Range(-forceRandomRange, forceRandomRange)
-            );
+            if (IsRolling)
+                return;
 
-            var torqueVector = new Vector3(
-                Random.Range(-torqueRandomRange, torqueRandomRange),
-                Random.Range(-torqueRandomRange, torqueRandomRange),
-                Random.Range(-torqueRandomRange, torqueRandomRange)
-            );
-
-            dice.Roll(forceVector, torqueVector);
+            StartRoll();
         }
-    }
 
-    private void Update()
-    {
-        if (!isRolling)
-            return;
+        public void RespawnDice(int newCount)
+        {
+            diceCount = newCount;
 
-        if (Time.time - rollStartTime < minRollDuration)
-            return;
+            DeleteDice();
+            SpawnDice();
+        }
 
-        if (spawnedDice.Any(dice => dice.IsRolling))
-            return;
+        private void StartRoll()
+        {
+            IsRolling = true;
+            TotalScore = null;
+            rollStartTime = Time.time;
 
-        isRolling = false;
-        CalculateScore();
-    }
+            foreach (var dice in spawnedDice)
+            {
+                var forceVector = new Vector3(
+                    Random.Range(-forceRandomRange, forceRandomRange),
+                    Random.Range(0, 2 * forceRandomRange),
+                    Random.Range(-forceRandomRange, forceRandomRange)
+                );
 
-    private void CalculateScore()
-    {
-        var totalScore = spawnedDice.Sum(dice => dice.GetValue());
+                var torqueVector = new Vector3(
+                    Random.Range(-torqueRandomRange, torqueRandomRange),
+                    Random.Range(-torqueRandomRange, torqueRandomRange),
+                    Random.Range(-torqueRandomRange, torqueRandomRange)
+                );
 
-        Debug.Log($"Total Score: {totalScore}");
+                dice.Roll(forceVector, torqueVector);
+            }
+        }
+
+        private void Update()
+        {
+            if (!IsRolling)
+                return;
+
+            if (Time.time - rollStartTime < minRollDuration)
+                return;
+
+            if (spawnedDice.Any(dice => dice.IsRolling))
+                return;
+
+            IsRolling = false;
+            CalculateScore();
+        }
+
+        private void CalculateScore()
+        {
+            TotalScore = spawnedDice.Sum(dice => dice.GetValue());
+
+            OnTotalScoreChange?.Invoke();
+        }
+
+        private void SpawnDice()
+        {
+            for (var i = 0; i < diceCount; i++)
+            {
+                var dice = Instantiate(prefab, transform);
+
+                var randomPos = new Vector3(
+                    Random.Range(-spawnRadius, spawnRadius),
+                    0,
+                    Random.Range(-spawnRadius, spawnRadius)
+                );
+
+                dice.transform.localPosition += randomPos;
+                dice.transform.localRotation = Random.rotation;
+
+                spawnedDice.Add(dice);
+            }
+        }
+
+        private void DeleteDice()
+        {
+            foreach (var dice in spawnedDice)
+                Destroy(dice.gameObject);
+
+            spawnedDice.Clear();
+        }
     }
 }
