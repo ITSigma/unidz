@@ -1,5 +1,8 @@
 using UnityEngine;
 
-public class Cube : MonoBehaviour
+namespace Carousel
 {
+    public class Cube : MonoBehaviour
+    {
+    }
 }
